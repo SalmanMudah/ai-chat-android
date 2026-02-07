@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.lifecycleScope
 import com.sa.aichatlib.model.Message
 import com.sa.aichatlib.MyApp
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -96,6 +97,9 @@ fun CustomChatScreen(repository: com.sa.aichatlib.repository.ChatRepository) {
     var inputText by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     
+    // Create coroutine scope at composable level
+    val coroutineScope = rememberCoroutineScope()
+    
     Column(modifier = Modifier.fillMaxSize()) {
         // Custom message list
         Column(
@@ -125,24 +129,26 @@ fun CustomChatScreen(repository: com.sa.aichatlib.repository.ChatRepository) {
             
             Button(
                 onClick = {
-                    // Use coroutineScope for sending message
-                    androidx.compose.runtime.rememberCoroutineScope().launch {
+                    val messageToSend = inputText
+                    inputText = ""
+                    
+                    // Use coroutine scope for sending message
+                    coroutineScope.launch {
                         isLoading = true
                         
                         // Insert user message
                         repository.insert(
-                            Message(sender = "User", message = inputText)
+                            Message(sender = "User", message = messageToSend)
                         )
                         
                         // Get AI response
-                        val response = repository.getAIResponse(inputText)
+                        val response = repository.getAIResponse(messageToSend)
                         
                         // Insert AI message
                         repository.insert(
                             Message(sender = "AI", message = response)
                         )
                         
-                        inputText = ""
                         isLoading = false
                     }
                 }
@@ -221,13 +227,11 @@ class BatchProcessingExample {
     suspend fun exportConversation(
         repository: com.sa.aichatlib.repository.ChatRepository
     ): String {
-        var conversation = ""
-        repository.messages.collect { messages ->
-            messages.forEach { message ->
-                conversation += "${message.sender}: ${message.message}\n"
-            }
+        // Use first() to get current messages without infinite collection
+        val messages = repository.messages.first()
+        return messages.joinToString("\n") { message ->
+            "${message.sender}: ${message.message}"
         }
-        return conversation
     }
 }
 

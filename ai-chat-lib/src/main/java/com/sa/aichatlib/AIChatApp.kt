@@ -28,13 +28,16 @@ import com.sa.aichatlib.repository.ChatRepository
  * ```
  */
 class MyApp : Application() {
+	private lateinit var database: AppDatabase
+	
 	lateinit var repository: ChatRepository
 		private set
 
 	override fun onCreate() {
 		super.onCreate()
-		val db = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "chat_db").build()
-		repository = ChatRepository(db.messageDao())
+		// Initialize database once
+		database = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "chat_db").build()
+		repository = ChatRepository(database.messageDao())
 	}
 	
 	/**
@@ -45,8 +48,8 @@ class MyApp : Application() {
 	 * @param apiKey Your OpenAI API key from https://platform.openai.com/account/api-keys
 	 */
 	fun configureApiKey(apiKey: String) {
-		val db = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "chat_db").build()
-		repository = ChatRepository(db.messageDao(), apiKey)
+		// Update repository with new API key (reusing existing database)
+		repository = ChatRepository(database.messageDao(), apiKey)
 	}
 }
 
