@@ -1,108 +1,152 @@
 # 🤖 AI Chat SDK for Android (OpenAI)
 
-This is a lightweight and production-ready Android SDK that lets you integrate conversational AI (Gemini or OpenAI) into any Android app using modern development practices.
+A lightweight, production-ready Android SDK that lets you integrate conversational AI (OpenAI GPT-3.5) into any Android app using modern development practices.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Android](https://img.shields.io/badge/Platform-Android-green.svg)](https://developer.android.com/)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-blue.svg)](https://kotlinlang.org/)
 
 ---
 
-## 🚀 Features
+## ✨ Features
 
-- ✨ Jetpack Compose UI for chat
-- 🤖 OpenAI GPT-3.5
-- 💾 Local message persistence using Room
-- 🔁 Real-time chat updates using Kotlin Flow
-- 🧱 MVVM + Clean Architecture
-- 📱 Sample app included
-
----
-
-## 📁 Project Structure
-
-```
-md-android-clean/
-├── aichatlib/                # Reusable SDK module
-│   ├── data/                 # Room DB setup
-│   ├── model/                # Message & API Models
-│   ├── repository/           # Handles AI API and local persistence
-│   ├── ui/                   # Chat UI Composables
-│   └── viewmodel/            # ChatViewModel
-├── sampleapp/                # Demo app using the SDK
-│   └── MainActivity.kt
-```
+- 🎨 **Jetpack Compose UI** - Modern, declarative chat interface
+- 🤖 **OpenAI GPT-3.5** - Powered by state-of-the-art AI
+- 💾 **Local Persistence** - Message history stored with Room database
+- 🔁 **Real-time Updates** - Reactive UI with Kotlin Flow
+- 🧱 **Clean Architecture** - MVVM pattern for maintainability
+- 📱 **Easy Integration** - Simple API, works out of the box
+- 🔐 **Secure** - API key configuration via dependency injection
+- 📚 **Well Documented** - Comprehensive guides and KDoc comments
 
 ---
 
-## 🔧 Setup
+## 🚀 Quick Start
 
-### 1. Add to `libs.versions.toml`:
-```toml
-okhttp = "com.squareup.okhttp3:okhttp:4.12.0"
-json = "org.json:json:20231013"
-```
+### 1. Add Internet Permission
 
-### 2. Add Internet Permission in `AndroidManifest.xml`:
 ```xml
+<!-- AndroidManifest.xml -->
 <uses-permission android:name="android.permission.INTERNET"/>
 ```
 
-### 3. Application Class (init Room):
+### 2. Create Application Class
+
 ```kotlin
-class AIChatApp : Application() {
+class YourApp : MyApp() {
     override fun onCreate() {
         super.onCreate()
-        AppDatabase.init(this)
+        // Configure with your OpenAI API key
+        configureApiKey(BuildConfig.OPENAI_API_KEY)
     }
 }
 ```
 
-Update your `AndroidManifest.xml` of sample app:
+### 3. Register in Manifest
+
 ```xml
-<application android:name=".AIChatApp" ... />
+<application
+    android:name=".YourApp"
+    ...>
+</application>
 ```
 
----
+### 4. Add Chat Screen
 
-## 🤖 Using OpenAI (GPT-3.5)
-
-In `ChatRepository.kt`:
 ```kotlin
-suspend fun getAIResponse(message: String): String = withContext(Dispatchers.IO) {
-    val json = JSONObject().apply {
-        put("model", "gpt-3.5-turbo")
-        put("messages", JSONArray().apply {
-            put(JSONObject().apply {
-                put("role", "user")
-                put("content", message)
-            })
-        })
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            MaterialTheme {
+                ChatScreen()
+            }
+        }
     }
-
-    val requestBody = json.toString()
-        .toRequestBody("application/json".toMediaType())
-
-    val request = Request.Builder()
-        .url("https://api.openai.com/v1/chat/completions")
-        .header("Authorization", "Bearer YOUR_API_KEY")
-        .post(requestBody)
-        .build()
-
-    val response = client.newCall(request).execute()
-    val body = response.body?.string()
-
-    return@withContext JSONObject(body ?: "")
-        .getJSONArray("choices")
-        .getJSONObject(0)
-        .getJSONObject("message")
-        .getString("content").trim()
 }
 ```
 
-> 🔐 Replace `YOUR_API_KEY` with your [OpenAI API key](https://platform.openai.com/account/api-keys)
+That's it! 🎉 You now have a fully functional AI chat interface.
 
 ---
 
-## 💬 Start Chat Screen
+## 📖 Documentation
 
-In your `MainActivity.kt`:
+- **[Complete Usage Guide](USAGE_GUIDE.md)** - Step-by-step integration instructions
+- **[Changelog](CHANGELOG.md)** - Version history and updates
+- **[Sample App](sampleapp/)** - Working example application
+- **[API Reference](ai-chat-lib/)** - Detailed SDK documentation
+
+---
+
+## 🔧 API Key Configuration
+
+### Recommended: Using BuildConfig
+
+1. Add to `local.properties`:
+```properties
+OPENAI_API_KEY=sk-proj-your-key-here
+```
+
+2. Configure in `build.gradle.kts`:
+```kotlin
+android {
+    buildFeatures {
+        buildConfig = true
+    }
+    
+    buildTypes {
+        debug {
+            buildConfigField("String", "OPENAI_API_KEY", 
+                "\"${project.findProperty("OPENAI_API_KEY") ?: ""}\"")
+        }
+    }
+}
+```
+
+3. Use in your Application class:
+```kotlin
+configureApiKey(BuildConfig.OPENAI_API_KEY)
+```
+
+🔐 **Security Note**: Never hardcode API keys or commit them to version control!
+
+Get your API key from: [OpenAI Platform](https://platform.openai.com/account/api-keys)
+
+---
+
+## 🏗️ Architecture
+
+The SDK follows Clean Architecture principles with clear separation of concerns:
+
+```
+ai-chat-lib/
+├── model/           # Data models (Message, API requests/responses)
+├── dao/             # Room database DAO and entities
+├── repository/      # Data layer (API + local persistence)
+├── viewmodel/       # Business logic and state management
+├── ui/              # Compose UI components (ChatScreen, MessageItem)
+├── factory/         # ViewModel factory for dependency injection
+└── utils/           # Helper functions and extensions
+```
+
+### Tech Stack
+
+| Layer          | Technology                    |
+|----------------|-------------------------------|
+| UI             | Jetpack Compose              |
+| State          | Kotlin Coroutines + Flow     |
+| Database       | Room                         |
+| Network        | OkHttp + Kotlin Serialization |
+| Architecture   | MVVM + Clean Architecture    |
+| DI             | Manual (lightweight)         |
+
+---
+
+## 💡 Usage Examples
+
+### Basic Chat Implementation
+
 ```kotlin
 setContent {
     MaterialTheme {
@@ -111,37 +155,131 @@ setContent {
 }
 ```
 
+### Custom Theme
+
+```kotlin
+MaterialTheme(
+    colorScheme = lightColorScheme(
+        primary = Color(0xFF6200EE),
+        onPrimary = Color.White
+    )
+) {
+    ChatScreen()
+}
+```
+
+### Direct Repository Access
+
+```kotlin
+val repository = (application as YourApp).repository
+
+lifecycleScope.launch {
+    // Send message
+    repository.insert(Message(sender = "User", message = "Hello!"))
+    
+    // Get AI response
+    val response = repository.getAIResponse("Hello!")
+    repository.insert(Message(sender = "AI", message = response))
+    
+    // Observe messages
+    repository.messages.collect { messages ->
+        // Update UI
+    }
+}
+```
+
+### Custom ViewModel
+
+```kotlin
+val repository = (application as YourApp).repository
+val viewModel = viewModel(factory = ChatViewModelFactory(repository))
+
+ChatScreen(viewModel = viewModel)
+```
+
 ---
 
-## ✅ Tech Highlights
+## 🎨 Customization
 
-| Layer     | Technology               |
-|-----------|--------------------------|
-| UI        | Jetpack Compose          |
-| ViewModel | Kotlin Coroutines + Flow |
-| DB        | Room                     |
-| Network   | OpenAI via OkHttp        |
+The SDK is designed to be easily customizable:
 
----
+- **Colors**: Modify message bubble colors in `MessageItem.kt`
+- **Styling**: Change text styles, spacing, and shapes
+- **Loading UI**: Replace the default loading indicator
+- **Layouts**: Create custom message layouts
+- **Theme**: Apply Material3 theming
 
-## 📸 Screenshot
-
-> ✅ Typing UI, persistent history, AI replies with loading indicator.
+See [USAGE_GUIDE.md](USAGE_GUIDE.md#customization) for detailed customization options.
 
 ---
 
-## 💡 Why this matters (Tech Nation):
+## 📱 Sample App
 
-- ✅ Modular SDK with Clean Architecture
-- ✅ Real product integration (Gemini or OpenAI)
-- ✅ Reusable by other devs and scalable
-- ✅ MVVM + Compose + Room = Best Practices
-- ✅ Demonstrates innovation + technical leadership
+The repository includes a complete sample app demonstrating SDK usage:
 
+```bash
+git clone https://github.com/SalmanMudah/ai-chat-android.git
+cd ai-chat-android
+# Open in Android Studio and run the 'sampleapp' module
+```
 
 ---
 
-## 📝 License
+## 🔍 Troubleshooting
 
-MIT – Free to use, modify, and extend.
+### Common Issues
+
+**"No response from OpenAI"**
+- Verify API key is correct
+- Check internet connection
+- Ensure OpenAI account has credits
+
+**App crashes on startup**
+- Confirm Application class is registered in AndroidManifest.xml
+- Verify you're extending MyApp
+- Check Room dependencies
+
+See [USAGE_GUIDE.md](USAGE_GUIDE.md#troubleshooting) for complete troubleshooting guide.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+```
+MIT License - Free to use, modify, and extend.
+```
+
+---
+
+## 🙏 Acknowledgments
+
+- Built with modern Android development best practices
+- Follows Material Design 3 guidelines
+- Inspired by the need for easy AI integration in Android apps
+
+---
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/SalmanMudah/ai-chat-android/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/SalmanMudah/ai-chat-android/discussions)
+- **Documentation**: [Usage Guide](USAGE_GUIDE.md)
+
+---
+
+**Made with ❤️ for the Android community**
 

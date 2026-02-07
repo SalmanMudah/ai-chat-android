@@ -13,6 +13,27 @@ import com.sa.aichatlib.MyApp
 import com.sa.aichatlib.factory.ChatViewModelFactory
 import com.sa.aichatlib.viewmodel.ChatViewModel
 
+/**
+ * Main chat screen composable that displays a conversation interface.
+ *
+ * Features:
+ * - Scrollable message list with reverse layout (newest at bottom)
+ * - Text input field with send button
+ * - Loading indicator while AI is responding
+ * - Persistent message history via Room database
+ *
+ * @param viewModel The ChatViewModel instance. If not provided, uses the default viewModel
+ *                  from the application context.
+ *
+ * @sample
+ * ```kotlin
+ * setContent {
+ *     MaterialTheme {
+ *         ChatScreen()
+ *     }
+ * }
+ * ```
+ */
 @Composable
 fun ChatScreen(viewModel: ChatViewModel = defaultChatViewModel()) {
     val messages by viewModel.messages.collectAsState()
@@ -85,6 +106,11 @@ fun ChatScreen(viewModel: ChatViewModel = defaultChatViewModel()) {
     }
 }
 
+/**
+ * Provides the default ChatViewModel instance using the application's repository.
+ *
+ * @return A ChatViewModel configured with the default ChatRepository.
+ */
 @Composable
 fun defaultChatViewModel(): ChatViewModel {
     val context = LocalContext.current

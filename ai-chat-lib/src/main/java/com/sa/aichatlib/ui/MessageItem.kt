@@ -14,6 +14,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sa.aichatlib.model.Message
 
+/**
+ * Displays a single chat message with appropriate styling.
+ *
+ * AI messages appear on the left with a gray background,
+ * while user messages appear on the right with the primary theme color.
+ *
+ * @param message The message to display.
+ */
 @Composable
 fun MessageItem(message: Message) {
     val isBot = message.isBot
